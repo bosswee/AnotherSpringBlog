@@ -1,0 +1,28 @@
+extends ../layout/app
+
+block page_title
+    .avatar
+        img(src="/images/user.jpg")
+    h1 #{App.getSiteName()}
+    p.meta #{App.getSiteSlogan()}
+
+    p Hi, there.  I love developing software and web applications and I blog about them.
+
+block title
+    = App.getSiteName()
+
+block content
+    // include ../posts/index
+
+    .latest-posts
+        hr
+        h2.text-center Latest Posts
+    for post in posts
+        .post-item
+            a(href="/posts/#{post.getPermalink()}")
+                h2 #{post.getTitle()}
+                .meta
+                    span #{viewHelper.getFormattedDate(post.getCreatedAt())}
+
+    .loadmore
+        a.btn.btn-default(href="/posts/archive") More
