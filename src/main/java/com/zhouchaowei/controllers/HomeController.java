@@ -1,5 +1,6 @@
 package com.zhouchaowei.controllers;
 
+import com.zhouchaowei.Constants;
 import com.zhouchaowei.models.Post;
 import com.zhouchaowei.services.AppSetting;
 import com.zhouchaowei.services.PostService;
@@ -21,13 +22,11 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 @Controller
 public class HomeController {
 
+    private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
     @Autowired
     private PostService postService;
-
     @Autowired
     private AppSetting appSetting;
-
-    private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
     @RequestMapping(value = "", method = GET)
     public String index(@RequestParam(defaultValue = "1") int page, Model model) {
@@ -42,19 +41,19 @@ public class HomeController {
     }
 
 
-    //@RequestMapping(value = "about", method = GET)
-    //public String about(Model model) {
-    //    Post post = postService.getPublishedPostByPermalink(Constants.ABOUT_PAGE_PERMALINK);
-    //
-    //    if (post == null) {
-    //        post = postService.createAboutPage();
-    //        logger.debug("create about page " + post.getPermalink());
-    //
-    //    }
-    //
-    //    model.addAttribute("about", post);
-    //    return "home/about";
-    //}
+    @RequestMapping(value = "about", method = GET)
+    public String about(Model model) {
+        Post post = postService.getPublishedPostByPermalink(Constants.ABOUT_PAGE_PERMALINK);
+
+        if (post == null) {
+            post = postService.createAboutPage();
+            logger.debug("create about page " + post.getPermalink());
+
+        }
+
+        model.addAttribute("about", post);
+        return "home/about";
+    }
 
 
 }

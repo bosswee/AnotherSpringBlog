@@ -1,12 +1,13 @@
 package com.zhouchaowei.services;
 
 
+import com.zhouchaowei.Constants;
 import com.zhouchaowei.error.NotFoundException;
 import com.zhouchaowei.models.Post;
 import com.zhouchaowei.models.Tag;
-import com.zhouchaowei.models.support.PostStatus;
-import com.zhouchaowei.models.support.PostType;
+import com.zhouchaowei.models.support.*;
 import com.zhouchaowei.repositories.PostRepository;
+import com.zhouchaowei.utils.Markdown;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,17 +23,13 @@ import java.util.*;
 
 @Service
 public class PostService {
+    private static final Logger logger = LoggerFactory.getLogger(PostService.class);
     @Autowired
     private PostRepository postRepository;
-
     @Autowired
     private TagService tagService;
-
     @Autowired
     private UserService userService;
-
-
-    private static final Logger logger = LoggerFactory.getLogger(PostService.class);
 
     public Post getPost(Long postId) {
         logger.debug("Get post " + postId);
@@ -46,23 +43,34 @@ public class PostService {
         return post;
     }
 
+    public Post getPublishedPostByPermalink(String permalink) {
+        logger.debug("Get post with permalink " + permalink);
 
-    //public Post createPost(Post post) {
-    //    if (post.getPostFormat() == PostFormat.MARKDOWN) {
-    //        post.setRenderedContent(Markdown.markdownToHtml(post.getContent()));
-    //    }
-    //
-    //    return postRepository.save(post);
-    //}
+        Post post = postRepository.findByPermalinkAndPostStatus(permalink, PostStatus.PUBLISHED);
+        if (post == null) {
+            throw new NotFoundException("Post with permalink '" + permalink + "' is not found.");
+        }
+
+        return post;
+    }
 
 
-    //public Post updatePost(Post post) {
-    //    if (post.getPostFormat() == PostFormat.MARKDOWN) {
-    //        post.setRenderedContent(Markdown.markdownToHtml(post.getContent()));
-    //    }
-    //
-    //    return postRepository.save(post);
-    //}
+    public Post createPost(Post post) {
+        if (post.getPostFormat() == PostFormat.MARKDOWN) {
+            post.setRenderedContent(Markdown.markdownToHtml(post.getContent()));
+        }
+
+        return postRepository.save(post);
+    }
+
+
+    public Post updatePost(Post post) {
+        if (post.getPostFormat() == PostFormat.MARKDOWN) {
+            post.setRenderedContent(Markdown.markdownToHtml(post.getContent()));
+        }
+
+        return postRepository.save(post);
+    }
 
 
     public void deletePost(Post post) {
@@ -115,18 +123,18 @@ public class PostService {
                 new PageRequest(page, pageSize, Sort.Direction.DESC, "createdAt"));
     }
 
-    //public Post createAboutPage() {
-    //    logger.debug("Create default about pageff");
-    //
-    //    Post post = new Post();
-    //    post.setTitle(Constants.ABOUT_PAGE_PERMALINK);
-    //    post.setContent(Constants.ABOUT_PAGE_PERMALINK.toLowerCase() + "aaa");
-    //    post.setPermalink(Constants.ABOUT_PAGE_PERMALINK);
-    //    post.setUser(userService.getSuperUser());
-    //    post.setPostFormat(PostFormat.MARKDOWN);
-    //
-    //    return createPost(post);
-    //}
+    public Post createAboutPage() {
+        logger.debug("Create default about pageff");
+
+        Post post = new Post();
+        post.setTitle(Constants.ABOUT_PAGE_PERMALINK);
+        post.setContent(Constants.ABOUT_PAGE_PERMALINK.toLowerCase() + "demo to practise");
+        post.setPermalink(Constants.ABOUT_PAGE_PERMALINK);
+        post.setUser(userService.getSuperUser());
+        post.setPostFormat(PostFormat.MARKDOWN);
+
+        return createPost(post);
+    }
 
     public Set<Tag> parseTagNames(String tagNames) {
         Set<Tag> tags = new HashSet<>();
