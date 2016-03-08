@@ -5,6 +5,8 @@ import com.zhouchaowei.repositories.SettingRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
@@ -16,15 +18,14 @@ import java.io.Serializable;
 @Service
 public class CacheSettingService implements SettingService {
 
+    private static final String CACHE_NAME = "cache.settings";
+    private static final Logger logger = LoggerFactory.getLogger(SettingService.class);
     private SettingRepository settingRepository;
-
 
     @Autowired
     public CacheSettingService(SettingRepository settingRepository) {
         this.settingRepository = settingRepository;
     }
-
-    private static final Logger logger = LoggerFactory.getLogger(SettingService.class);
 
     @Override
     public Serializable get(String key) {
@@ -43,12 +44,14 @@ public class CacheSettingService implements SettingService {
     }
 
     @Override
+    @Cacheable(value = CACHE_NAME, key = "#key")
     public Serializable get(String key, Serializable defaultValue) {
         Serializable value = get(key);
         return value == null ? defaultValue : value;
     }
 
     @Override
+    @CacheEvict(value = CACHE_NAME, key = "#key")
     public void put(String key, Serializable value) {
         logger.info("Update setting " + key + " to database. Value = " + value);
 

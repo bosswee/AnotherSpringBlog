@@ -1,37 +1,28 @@
 AnotherSpringBlog
 =====
 
-AnotherSpringBlog is a very simple and clean-design blog system implemented with Spring Boot.
+简单博客系统，练习Spring Boot以及Redis的使用
 
-just practise.
-
-- Spring Boot and many of Spring familiy (e.g. Spring MVC, Spring JPA, Spring Secruity and etc)
+- Spring Boot，Spring MVC/JPA/ Secruity 
 - Hibernate + MySQL
-- [HikariCP](https://github.com/brettwooldridge/HikariCP) - A solid high-performance JDBC connection pool
-- [Bootstrap](https://getbootstrap.com) - A very popular and responsive front-end framework
-- [Pegdown](https://github.com/sirthias/pegdown) - A pure-java markdown processor
-- [ACE Editor](http://ace.c9.io/) - A high performance code editor which I use to write posts and code.
-- [Pygments](http://pygments.org/) - A python library for highlighting code syntax
-- [Jade4j](https://github.com/neuland/jade4j) - [Jade](http://jade-lang.com/) is an elegant template language.
-- [Webjars](http://www.webjars.org/) - A client-side web libraries packaged into JAR files. A easy way to manage JavaScript and CSS vendors in Gradle.
-- [Redis](http://redis.io/) - A very powerful in-memory data cache server.
+- [HikariCP](https://github.com/brettwooldridge/HikariCP)
+- [Bootstrap](https://getbootstrap.com)
+- [Pegdown](https://github.com/sirthias/pegdown) 
+- [ACE Editor](http://ace.c9.io/)  
+- [Pygments](http://pygments.org/) 
+- [Jade4j](https://github.com/neuland/jade4j) 
+- [Webjars](http://www.webjars.org/) 
+## 开发
 
-## Development
-
-Before development, please install the following service software:
+本地安装：
 
 - [MySQL](https://www.mysql.com)
 - [Redis](http://redis.io)
 - [Pygments](http://pygments.org)
 
-Edit the spring config profile `src/main/resources/application.yml` according to your settings.
+按需配置 `src/main/resources/application.yml` 
 
-And start MySQL and Redis first before running the application.
+本地启动mysql,redis
 
+命令行启动 ./gradlew bootRun
 
-## Deployment
-
-
-
-## License
-Modified BSD license.

@@ -1,12 +1,14 @@
 package com.zhouchaowei.services;
 
-import com.zhouchaowei.models.*;
-import com.zhouchaowei.repositories.*;
-import org.slf4j.*;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.stereotype.*;
+import com.zhouchaowei.models.Tag;
+import com.zhouchaowei.repositories.TagRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.*;
+import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * @author wee
@@ -14,9 +16,13 @@ import java.util.*;
  */
 @Service
 public class TagService {
-    private TagRepository tagRepository;
-
+    public static final String CACHE_NAME = "cache.tag";
+    public static final String CACHE_NAME_TAGS = "cache.tag.all";
+    public static final String CACHE_TYPE = "'_Tag_'";
+    public static final String CACHE_KEY = CACHE_TYPE + " + #tagName";
+    public static final String CACHE_TAG_KEY = CACHE_TYPE + " + #tag.name";
     private static final Logger logger = LoggerFactory.getLogger(PostService.class);
+    private TagRepository tagRepository;
 
     @Autowired
     public TagService(TagRepository tagRepository) {
@@ -31,14 +37,23 @@ public class TagService {
         return tag;
     }
 
+
+    @Cacheable(value = CACHE_NAME, key = CACHE_KEY)
     public Tag getTag(String tagName) {
         return tagRepository.findByName(tagName);
     }
 
+
+    @Caching(evict = {
+            @CacheEvict(value = CACHE_NAME, key = CACHE_TAG_KEY),
+            @CacheEvict(value = CACHE_NAME_TAGS, allEntries = true)
+    })
     public void deleteTag(Tag tag) {
         tagRepository.delete(tag);
     }
 
+
+    @Cacheable(value = CACHE_NAME_TAGS, key = "#root.method.name")
     public List<Tag> getAllTags() {
         return tagRepository.findAll();
     }

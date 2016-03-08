@@ -11,6 +11,7 @@ import com.zhouchaowei.utils.Markdown;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.*;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,11 @@ import java.util.*;
 
 @Service
 public class PostService {
+    public static final String CACHE_NAME = "cache.post";
+    public static final String CACHE_NAME_ARCHIVE = CACHE_NAME + ".archive";
+    public static final String CACHE_NAME_PAGE = CACHE_NAME + ".page";
+    public static final String CACHE_NAME_TAGS = CACHE_NAME + ".tag";
+    public static final String CACHE_NAME_COUNTS = CACHE_NAME + ".counts_tags";
     private static final Logger logger = LoggerFactory.getLogger(PostService.class);
     @Autowired
     private PostRepository postRepository;
@@ -31,6 +37,7 @@ public class PostService {
     @Autowired
     private UserService userService;
 
+    @Cacheable(CACHE_NAME)
     public Post getPost(Long postId) {
         logger.debug("Get post " + postId);
 
@@ -43,6 +50,8 @@ public class PostService {
         return post;
     }
 
+
+    @Cacheable(CACHE_NAME)
     public Post getPublishedPostByPermalink(String permalink) {
         logger.debug("Get post with permalink " + permalink);
 
@@ -55,6 +64,11 @@ public class PostService {
     }
 
 
+    @Caching(evict = {
+            @CacheEvict(value = CACHE_NAME_ARCHIVE, allEntries = true),
+            @CacheEvict(value = CACHE_NAME_PAGE, allEntries = true),
+            @CacheEvict(value = CACHE_NAME_COUNTS, allEntries = true)
+    })
     public Post createPost(Post post) {
         if (post.getPostFormat() == PostFormat.MARKDOWN) {
             post.setRenderedContent(Markdown.markdownToHtml(post.getContent()));
@@ -63,7 +77,14 @@ public class PostService {
         return postRepository.save(post);
     }
 
-
+    @Caching(evict = {
+            @CacheEvict(value = CACHE_NAME, key = "#post.id"),
+            @CacheEvict(value = CACHE_NAME, key = "#post.permalink", condition = "#post.permalink != null"),
+            @CacheEvict(value = CACHE_NAME_TAGS, key = "#post.id.toString().concat('-tags')"),
+            @CacheEvict(value = CACHE_NAME_ARCHIVE, allEntries = true),
+            @CacheEvict(value = CACHE_NAME_PAGE, allEntries = true),
+            @CacheEvict(value = CACHE_NAME_COUNTS, allEntries = true)
+    })
     public Post updatePost(Post post) {
         if (post.getPostFormat() == PostFormat.MARKDOWN) {
             post.setRenderedContent(Markdown.markdownToHtml(post.getContent()));
@@ -72,11 +93,19 @@ public class PostService {
         return postRepository.save(post);
     }
 
-
+    @Caching(evict = {
+            @CacheEvict(value = CACHE_NAME, key = "#post.id"),
+            @CacheEvict(value = CACHE_NAME, key = "#post.permalink", condition = "#post.permalink != null"),
+            @CacheEvict(value = CACHE_NAME_TAGS, key = "#post.id.toString().concat('-tags')"),
+            @CacheEvict(value = CACHE_NAME_ARCHIVE, allEntries = true),
+            @CacheEvict(value = CACHE_NAME_PAGE, allEntries = true),
+            @CacheEvict(value = CACHE_NAME_COUNTS, allEntries = true)
+    })
     public void deletePost(Post post) {
         postRepository.delete(post);
     }
 
+    @Cacheable(value = CACHE_NAME_ARCHIVE, key = "#root.method.name")
     public List<Post> getArchivePosts() {
         logger.debug("Get all archive posts from database.");
 
@@ -91,6 +120,8 @@ public class PostService {
         return cachedPosts;
     }
 
+
+    @Cacheable(value = CACHE_NAME_TAGS, key = "#post.id.toString().concat('-tags')")
     public List<Tag> getPostTags(Post post) {
         logger.debug("Get tags of post " + post.getId());
 
@@ -114,6 +145,7 @@ public class PostService {
         return archivePost;
     }
 
+    @Cacheable(value = CACHE_NAME_PAGE, key = "T(java.lang.String).valueOf(#page).concat('-').concat(#pageSize)")
     public Page<Post> getAllPublishedPostsByPage(int page, int pageSize) {
         logger.debug("Get posts by page " + page);
 
@@ -166,6 +198,8 @@ public class PostService {
         return postRepository.findByTag(tagName, new PageRequest(page, pageSize, Sort.Direction.DESC, "createdAt"));
     }
 
+
+    @Cacheable(value = CACHE_NAME_COUNTS, key = "#root.method.name")
     public List<Map<String, Long>> countPostsByTags() {
         logger.debug("Count posts group by tags.");
 
